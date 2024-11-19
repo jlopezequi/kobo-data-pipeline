@@ -13,28 +13,38 @@ p_load(
 )
 
 # Configurar el directorio base del proyecto
-project_path <- getwd()  # Obtener el directorio actual
+project_path <- getwd()  # Asume que el repositorio se clonó correctamente
 message("Directorio base: ", project_path)
 
-# Cargar credenciales desde variables de entorno
+# Verificar si el archivo .env existe
+if (file.exists(".env")) {
+  message("Archivo .env encontrado en: ", project_path)
+  dotenv::load_dot_env(".env")
+} else {
+  stop("El archivo .env no se encuentra en la ruta: ", project_path)
+}
+
+# Cargar credenciales
 username <- Sys.getenv("USERNAME")
 password <- Sys.getenv("PASSWORD")
 email <- Sys.getenv("EMAIL")
-creds_content <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
+temp_creds_file <- "google-credentials.json"
 
 # Verificar que las credenciales estén cargadas
-if (username == "" || password == "" || email == "" || creds_content == "") {
-  stop("Una o más variables de entorno están vacías. Verifica su configuración en GitHub Secrets.")
+if (username == "" || password == "" || email == "") {
+  stop("Una o más variables del archivo .env están vacías. Verifica su configuración.")
 }
 
-# Crear un archivo temporal para las credenciales de Google desde el Secret
-temp_creds_file <- tempfile(fileext = ".json")
-writeLines(creds_content, temp_creds_file)
+# Verificar la existencia del archivo de credenciales de Google
+if (!file.exists(temp_creds_file)) {
+  stop("El archivo de credenciales de Google no se encuentra en: ", temp_creds_file)
+}
 
-# Autenticación de Google Sheets usando la Service Account
+# Autenticación con Google Sheets usando la Service Account
+message("Autenticando con Google Sheets...")
 tryCatch({
   gs4_auth(
-    path = temp_creds_file,  # Archivo JSON de la Service Account
+    path = temp_creds_file,  # Archivo JSON generado desde el YML
     cache = ".secrets"
   )
   message("Autenticación de Google Sheets completada.")
@@ -60,17 +70,12 @@ load_script <- function(script_name) {
 }
 
 # Ejecutar scripts secundarios en orden
-tryCatch({
-  load_script("Import_data_IFC.R")         # Importar datos desde Kobo
-  load_script("Correcciones.R")           # Aplicar correcciones a los datos
-  load_script("Alertas_IFC.R")            # Crear alertas
-  load_script("Recontacto_IFC.R")         # Generar reporte de recontacto
-  load_script("Export_data_IFC.R")        # Exportar datos procesados a Google Sheets
-  load_script("Validación_Identidad_IFC.R") # Validación de identidad
-}, error = function(e) {
-  message("Error al ejecutar los scripts secundarios: ", e)
-  stop(e)
-})
+load_script("Import_data_IFC.R")         # Importar datos desde Kobo
+load_script("Correcciones.R")           # Aplicar correcciones a los datos
+load_script("Alertas_IFC.R")            # Crear alertas
+load_script("Recontacto_IFC.R")         # Generar reporte de recontacto
+load_script("Export_data_IFC.R")        # Exportar datos procesados a Google Sheets
+load_script("Validación_Identidad_IFC.R") # Validación de identidad
 
 # Confirmación de finalización
 message("Pipeline completado exitosamente.")

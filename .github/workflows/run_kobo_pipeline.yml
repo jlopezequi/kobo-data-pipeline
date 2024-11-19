@@ -46,4 +46,4 @@ jobs:
         USERNAME: ${{ secrets.USERNAME }}
         PASSWORD: ${{ secrets.PASSWORD }}
         EMAIL: ${{ secrets.EMAIL }}
-        GOOGLE_SHEETS_CREDENTIALS: google-credentials.json
+
