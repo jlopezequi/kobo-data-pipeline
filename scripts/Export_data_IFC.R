@@ -14,8 +14,7 @@ tryCatch({
   )
   message("Autenticación de Google Sheets completada.")
 }, error = function(e) {
-  message("Error en la autenticación de Google Sheets: ", e)
-  stop(e)
+  stop("Error en la autenticación de Google Sheets: ", e)
 })
 
 ### Exportar recontacto ###
@@ -23,11 +22,11 @@ tryCatch({
 # URL del Google Sheet para recontacto
 sheet_url_recontacto <- "https://docs.google.com/spreadsheets/d/1KAZ_nrcyS6Uwn3Gp_gfd8m0jwdcWbw1fjWq5b8rT5KA/edit"
 message("Conectando al Google Sheet de recontacto: ", sheet_url_recontacto)
-tryCatch({
-  sheet_recontacto <- gs4_get(sheet_url_recontacto)
+
+sheet_recontacto <- tryCatch({
+  gs4_get(sheet_url_recontacto)
 }, error = function(e) {
-  message("Error al conectar con el Google Sheet de recontacto: ", e)
-  stop(e)
+  stop("Error al conectar con el Google Sheet de recontacto: ", e)
 })
 
 # Escribir datos en el Google Sheet
@@ -37,8 +36,7 @@ tryCatch({
   sheet_write(datos_recontacto, ss = sheet_recontacto, sheet = "preguntas_recontacto")
   message("Datos de recontacto exportados correctamente.")
 }, error = function(e) {
-  message("Error al exportar datos de recontacto: ", e)
-  stop(e)
+  stop("Error al exportar datos de recontacto: ", e)
 })
 
 ### Exportar alertas para Looker Studio ###
@@ -46,17 +44,18 @@ tryCatch({
 # URL del Google Sheet para alertas
 sheet_url_alertas <- "https://docs.google.com/spreadsheets/d/1UGTkn0NcxeDLnGMSTI1nA7iX2mg8JnP2V2SbNmfbVFs/edit"
 message("Conectando al Google Sheet de alertas: ", sheet_url_alertas)
-tryCatch({
-  sheet_alertas <- gs4_get(sheet_url_alertas)
+
+sheet_alertas <- tryCatch({
+  gs4_get(sheet_url_alertas)
 }, error = function(e) {
-  message("Error al conectar con el Google Sheet de alertas: ", e)
-  stop(e)
+  stop("Error al conectar con el Google Sheet de alertas: ", e)
 })
 
 # Corregir alertas basadas en recontacto resuelto
 message("Corrigiendo alertas basadas en recontacto resuelto...")
 tryCatch({
   errores_exitosos <- read_sheet("https://docs.google.com/spreadsheets/d/1YFC-naJiXBpc3vhNFYPveJVUBpopKyUL0BTgNK6gF9U/edit")
+  
   errores_exitosos <- errores_exitosos %>%
     filter(
       Estatus == "Resuelto exitosamente" &
@@ -69,8 +68,7 @@ tryCatch({
       flag_extreme_values = if_else(id %in% errores_exitosos$id, 0, flag_extreme_values, missing = flag_extreme_values)
     )
 }, error = function(e) {
-  message("Error al corregir alertas: ", e)
-  stop(e)
+  stop("Error al corregir alertas: ", e)
 })
 
 # Calcular métricas y transformar datos para Looker Studio
@@ -111,8 +109,7 @@ tryCatch({
     ) %>%
     filter(part_valido == 1)  # Solo registros con consentimiento
 }, error = function(e) {
-  message("Error al procesar datos de alertas: ", e)
-  stop(e)
+  stop("Error al procesar datos de alertas: ", e)
 })
 
 # Escribir datos en el Google Sheet
@@ -121,6 +118,5 @@ tryCatch({
   sheet_write(alertas, ss = sheet_alertas, sheet = "alertas")
   message("Datos de alertas exportados correctamente.")
 }, error = function(e) {
-  message("Error al exportar datos de alertas: ", e)
-  stop(e)
+  stop("Error al exportar datos de alertas: ", e)
 })
