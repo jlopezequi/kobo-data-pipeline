@@ -5,4 +5,4 @@
 .Rhistory
 .RData
 .secrets
-.env.save
+.save
