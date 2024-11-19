@@ -14,8 +14,7 @@ tryCatch({
   )
   message("Autenticación de Google Sheets completada.")
 }, error = function(e) {
-  message("Error en la autenticación de Google Sheets: ", e)
-  stop(e)
+  stop("Error en la autenticación de Google Sheets: ", e)
 })
 
 # Procesar datos para validación de identidad
@@ -40,25 +39,25 @@ df_validar <- tryCatch({
       maximo_nivel_educ = b5_educ_max_str
     )
 }, error = function(e) {
-  message("Error al procesar los datos de validación de identidad: ", e)
-  stop(e)
+  stop("Error al procesar los datos de validación de identidad: ", e)
 })
 
+# Mostrar estructura del dataframe generado
 message("Datos preparados para validación de identidad. Estructura:")
 tryCatch({
   glimpse(df_validar)
 }, error = function(e) {
-  message("Error al mostrar la estructura de los datos: ", e)
+  warning("Error al mostrar la estructura de los datos: ", e)
 })
 
 # Conectar al Google Sheet correspondiente
 sheet_url <- "https://docs.google.com/spreadsheets/d/1kHB1oyExyyDeaVwMJX-tY3DpkdaK3iaiRKyUMkMqop0/edit?gid=0"
 message("Conectando al Google Sheet de validación de identidad: ", sheet_url)
+
 sheet <- tryCatch({
   gs4_get(sheet_url)
 }, error = function(e) {
-  message("Error al conectar al Google Sheet: ", e)
-  stop(e)
+  stop("Error al conectar al Google Sheet: ", e)
 })
 
 # Exportar los datos procesados al Google Sheet
@@ -67,6 +66,5 @@ tryCatch({
   sheet_write(df_validar, ss = sheet, sheet = "datos_validacion")
   message("Datos de validación de identidad exportados correctamente.")
 }, error = function(e) {
-  message("Error al exportar los datos de validación de identidad: ", e)
-  stop(e)
+  stop("Error al exportar los datos de validación de identidad: ", e)
 })
