@@ -46,9 +46,6 @@ df_variables_etiquetas <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Guardar etiquetas en un archivo para referencia (opcional)
-saveRDS(df_variables_etiquetas, file = "variables_etiquetas.rds")
-message("Etiquetas de variables guardadas en 'variables_etiquetas.rds'.")
 
 # Eliminar etiquetas para facilitar el procesamiento
 message("Eliminando etiquetas de las variables...")
@@ -74,10 +71,7 @@ data <- data %>%
 message("Datos procesados correctamente. Estructura final:")
 glimpse(data)
 
-### Guardar datos procesados ###
 
-# Guardar los datos en formato RDS para uso posterior (opcional)
-saveRDS(data, file = "data_imported.rds")
-message("Datos procesados guardados en 'data_imported.rds'.")
+
 
 
