@@ -17,16 +17,7 @@ p_load(
 project_path <- getwd()  # Obtener el directorio actual
 message("Directorio base: ", project_path)
 
-# Verificar si el archivo .env existe
-env_path <- file.path(project_path, ".env")
-if (file.exists(env_path)) {
-  message("Archivo .env encontrado en: ", env_path)
-  dotenv::load_dot_env(env_path)
-} else {
-  stop("El archivo .env no se encuentra en la ruta: ", env_path)
-}
-
-# Cargar credenciales
+# Cargar credenciales desde variables de entorno
 username <- Sys.getenv("USERNAME")
 password <- Sys.getenv("PASSWORD")
 email <- Sys.getenv("EMAIL")
@@ -34,16 +25,15 @@ creds_path <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
 
 # Verificar que las credenciales estén cargadas
 if (username == "" || password == "" || email == "" || creds_path == "") {
-  stop("Una o más variables del archivo .env están vacías. Verifica su configuración.")
+  stop("Una o más variables de entorno están vacías. Verifica su configuración en GitHub Secrets.")
 }
 
-# Verificar la existencia del archivo de credenciales de Google
-if (!file.exists(creds_path)) {
-  stop("El archivo de credenciales de Google no se encuentra en: ", creds_path)
-}
+# Crear temporalmente el archivo de credenciales de Google desde el Secret
+temp_creds_file <- tempfile(fileext = ".json")
+writeLines(creds_path, temp_creds_file)
 
 # Autenticación de Google Sheets
-gs4_auth(path = creds_path, cache = ".secrets")
+gs4_auth(path = temp_creds_file, cache = ".secrets")
 message("Autenticación de Google Sheets completada.")
 
 # Confirmar que las credenciales se cargaron correctamente
