@@ -1,22 +1,27 @@
 ### Validación de identidad ###
 
-# Verificar si las credenciales están disponibles
-if (!exists("email")) {
+# Verificar si el archivo de credenciales temporales está disponible
+if (!exists("temp_creds_file") || !file.exists(temp_creds_file)) {
   stop("No se encontraron las credenciales de Google Sheets. Asegúrate de cargarlas desde el script maestro.")
 }
 
-# Confirmar autenticación con Google Sheets
+# Autenticación con Google Sheets usando la Service Account
 message("Autenticando con Google Sheets...")
-gs4_auth(
-  path = tempfile(fileext = ".json"),  # Archivo temporal para credenciales
-  cache = ".secrets",
-  use_oob = TRUE  # Para entornos no interactivos
-)
+tryCatch({
+  gs4_auth(
+    path = temp_creds_file,  # Archivo temporal de credenciales
+    cache = ".secrets"
+  )
+  message("Autenticación de Google Sheets completada.")
+}, error = function(e) {
+  message("Error en la autenticación de Google Sheets: ", e)
+  stop(e)
+})
 
 # Procesar datos para validación de identidad
 message("Procesando datos para validación de identidad...")
-tryCatch({
-  df_validar <- alertas %>%
+df_validar <- tryCatch({
+  alertas %>%
     select(
       k1_1_ID,
       k1_nombre_completo,
@@ -34,11 +39,16 @@ tryCatch({
       nacionalidad = c1_nacionalidad_str,
       maximo_nivel_educ = b5_educ_max_str
     )
-  message("Datos preparados para validación de identidad. Estructura:")
-  glimpse(df_validar)
 }, error = function(e) {
   message("Error al procesar los datos de validación de identidad: ", e)
   stop(e)
+})
+
+message("Datos preparados para validación de identidad. Estructura:")
+tryCatch({
+  glimpse(df_validar)
+}, error = function(e) {
+  message("Error al mostrar la estructura de los datos: ", e)
 })
 
 # Conectar al Google Sheet correspondiente
