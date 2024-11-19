@@ -17,11 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Instalar dependencias del sistema operativo
+      # 2. Instalar dependencias del sistema operativo necesarias para R
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev pandoc
 
       # 3. Configurar entorno R
       - name: Set up R environment
@@ -29,7 +29,7 @@ jobs:
         with:
           r-version: "4.3.1"
 
-      # 4. Instalar paquetes y ejecutar el script maestro
+      # 4. Instalar paquetes R y ejecutar el script maestro
       - name: Install dependencies and run master script
         run: |
           Rscript -e "install.packages('pacman', repos='https://cloud.r-project.org')"
