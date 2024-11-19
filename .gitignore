@@ -1,0 +1,7 @@
+# Ignorar credenciales locales
+.env
+*.json
+# Archivos temporales de R
+.Rhistory
+.RData
+.secrets
