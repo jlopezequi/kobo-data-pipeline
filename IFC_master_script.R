@@ -13,7 +13,6 @@ p_load(
 )
 
 # Configurar el directorio base del proyecto
-# En GitHub Actions, el directorio actual es el root del repositorio.
 project_path <- getwd()  # Obtener el directorio actual
 message("Directorio base: ", project_path)
 
@@ -21,19 +20,23 @@ message("Directorio base: ", project_path)
 username <- Sys.getenv("USERNAME")
 password <- Sys.getenv("PASSWORD")
 email <- Sys.getenv("EMAIL")
-creds_path <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
+creds_content <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
 
 # Verificar que las credenciales estén cargadas
-if (username == "" || password == "" || email == "" || creds_path == "") {
+if (username == "" || password == "" || email == "" || creds_content == "") {
   stop("Una o más variables de entorno están vacías. Verifica su configuración en GitHub Secrets.")
 }
 
-# Crear temporalmente el archivo de credenciales de Google desde el Secret
+# Crear archivo temporal para las credenciales de Google desde el contenido del Secret
 temp_creds_file <- tempfile(fileext = ".json")
-writeLines(creds_path, temp_creds_file)
+writeLines(creds_content, temp_creds_file)
 
 # Autenticación de Google Sheets
-gs4_auth(path = temp_creds_file, cache = ".secrets")
+gs4_auth(
+  path = temp_creds_file,
+  cache = ".secrets",
+  use_oob = TRUE  # Autenticación para entornos no interactivos
+)
 message("Autenticación de Google Sheets completada.")
 
 # Confirmar que las credenciales se cargaron correctamente
@@ -62,3 +65,4 @@ load_script("Validación_Identidad_IFC.R") # Validación de identidad
 
 # Confirmación de finalización
 message("Pipeline completado exitosamente.")
+
