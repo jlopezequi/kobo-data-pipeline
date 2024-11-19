@@ -13,18 +13,17 @@ p_load(
 )
 
 # Configurar el directorio base del proyecto
-# Asegúrate de ajustar esta ruta según tu repositorio
-setwd('/Users/julianlopezcespedes/Library/CloudStorage/GoogleDrive-jlopez@equilibriumbdc.com/Shared drives/Equilibrium SDC/🥁 PROYECTOS SDC/126. IFC México/2. Implementación/auditoría y monitoreo/scripts/kobo-data-pipeline')
-
-project_path <- getwd()  # Confirmar el directorio actual
+# En GitHub Actions, el directorio actual es el root del repositorio.
+project_path <- getwd()  # Obtener el directorio actual
 message("Directorio base: ", project_path)
 
 # Verificar si el archivo .env existe
-if (file.exists(".env")) {
-  message("Archivo .env encontrado en: ", project_path)
-  dotenv::load_dot_env(".env")
+env_path <- file.path(project_path, ".env")
+if (file.exists(env_path)) {
+  message("Archivo .env encontrado en: ", env_path)
+  dotenv::load_dot_env(env_path)
 } else {
-  stop("El archivo .env no se encuentra en la ruta: ", project_path)
+  stop("El archivo .env no se encuentra en la ruta: ", env_path)
 }
 
 # Cargar credenciales
