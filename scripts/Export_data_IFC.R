@@ -1,51 +1,62 @@
 ### Exportar datos a Google Sheets ###
 
 # Verificar si las credenciales están disponibles
-if (exists("email")) {
-  message("Credenciales de Google Sheets cargadas correctamente.")
-} else {
+if (!exists("email")) {
   stop("No se encontraron las credenciales de Google Sheets. Asegúrate de cargarlas desde el script maestro.")
 }
 
 # Confirmar autenticación con Google Sheets
 message("Autenticando con Google Sheets...")
-gs4_auth(email = email, cache = ".secrets")
+gs4_auth(
+  path = tempfile(fileext = ".json"),  # Archivo temporal para credenciales
+  cache = ".secrets",
+  use_oob = TRUE  # Para entornos no interactivos
+)
 
 ### Exportar recontacto ###
 
 # URL del Google Sheet para recontacto
-sheet_url_recontacto <- "https://docs.google.com/spreadsheets/d/1KAZ_nrcyS6Uwn3Gp_gfd8m0jwdcWbw1fjWq5b8rT5KA/edit?gid=0#gid=0"
+sheet_url_recontacto <- "https://docs.google.com/spreadsheets/d/1KAZ_nrcyS6Uwn3Gp_gfd8m0jwdcWbw1fjWq5b8rT5KA/edit?gid=0"
 message("Conectando al Google Sheet de recontacto: ", sheet_url_recontacto)
 sheet_recontacto <- gs4_get(sheet_url_recontacto)
 
 # Escribir datos en el Google Sheet
 message("Exportando datos de recontacto...")
-sheet_write(data, ss = sheet_recontacto, sheet = "base de datos")
-sheet_write(datos_recontacto, ss = sheet_recontacto, sheet = "preguntas_recontacto")
-
-message("Datos de recontacto exportados correctamente.")
+tryCatch({
+  sheet_write(data, ss = sheet_recontacto, sheet = "base de datos")
+  sheet_write(datos_recontacto, ss = sheet_recontacto, sheet = "preguntas_recontacto")
+  message("Datos de recontacto exportados correctamente.")
+}, error = function(e) {
+  message("Error al exportar datos de recontacto: ", e)
+  stop(e)
+})
 
 ### Exportar alertas para Looker Studio ###
 
 # URL del Google Sheet para alertas
-sheet_url_alertas <- "https://docs.google.com/spreadsheets/d/1UGTkn0NcxeDLnGMSTI1nA7iX2mg8JnP2V2SbNmfbVFs/edit?gid=0#gid=0"
+sheet_url_alertas <- "https://docs.google.com/spreadsheets/d/1UGTkn0NcxeDLnGMSTI1nA7iX2mg8JnP2V2SbNmfbVFs/edit?gid=0"
 message("Conectando al Google Sheet de alertas: ", sheet_url_alertas)
 sheet_alertas <- gs4_get(sheet_url_alertas)
 
 # Corregir alertas basadas en recontacto resuelto
 message("Corrigiendo alertas basadas en recontacto resuelto...")
-errores_exitosos <- read_sheet("https://docs.google.com/spreadsheets/d/1YFC-naJiXBpc3vhNFYPveJVUBpopKyUL0BTgNK6gF9U/edit?gid=0#gid=0") 
-errores_exitosos <- errores_exitosos %>%
-  filter(
-    Estatus == "Resuelto exitosamente" &
-      valor_extremo == 1 &
-      !is.na(`Respuesta correcta (Ingrese el número que corresponde a la opción)`)
-  )
-
-alertas <- alertas %>%
-  mutate(
-    flag_extreme_values = if_else(id %in% errores_exitosos$id, 0, flag_extreme_values, missing = flag_extreme_values)
-  )
+tryCatch({
+  errores_exitosos <- read_sheet("https://docs.google.com/spreadsheets/d/1YFC-naJiXBpc3vhNFYPveJVUBpopKyUL0BTgNK6gF9U/edit?gid=0")
+  errores_exitosos <- errores_exitosos %>%
+    filter(
+      Estatus == "Resuelto exitosamente" &
+        valor_extremo == 1 &
+        !is.na(`Respuesta correcta (Ingrese el número que corresponde a la opción)`)
+    )
+  
+  alertas <- alertas %>%
+    mutate(
+      flag_extreme_values = if_else(id %in% errores_exitosos$id, 0, flag_extreme_values, missing = flag_extreme_values)
+    )
+}, error = function(e) {
+  message("Error al corregir alertas: ", e)
+  stop(e)
+})
 
 # Calcular métricas y transformar datos para Looker Studio
 message("Procesando datos de alertas...")
@@ -86,7 +97,10 @@ alertas <- alertas %>%
 
 # Escribir datos en el Google Sheet
 message("Exportando datos de alertas...")
-sheet_write(alertas, ss = sheet_alertas, sheet = "alertas")
-
-message("Datos de alertas exportados correctamente.")
-
+tryCatch({
+  sheet_write(alertas, ss = sheet_alertas, sheet = "alertas")
+  message("Datos de alertas exportados correctamente.")
+}, error = function(e) {
+  message("Error al exportar datos de alertas: ", e)
+  stop(e)
+})
