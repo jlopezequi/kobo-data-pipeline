@@ -27,17 +27,21 @@ if (username == "" || password == "" || email == "" || creds_content == "") {
   stop("Una o más variables de entorno están vacías. Verifica su configuración en GitHub Secrets.")
 }
 
-# Crear archivo temporal para las credenciales de Google desde el contenido del Secret
+# Crear un archivo temporal para las credenciales de Google desde el Secret
 temp_creds_file <- tempfile(fileext = ".json")
 writeLines(creds_content, temp_creds_file)
 
-# Autenticación de Google Sheets
-gs4_auth(
-  path = temp_creds_file,
-  cache = ".secrets",
-  use_oob = TRUE  # Autenticación para entornos no interactivos
-)
-message("Autenticación de Google Sheets completada.")
+# Autenticación de Google Sheets usando la Service Account
+tryCatch({
+  gs4_auth(
+    path = temp_creds_file,  # Archivo JSON de la Service Account
+    cache = ".secrets"
+  )
+  message("Autenticación de Google Sheets completada.")
+}, error = function(e) {
+  message("Error en la autenticación de Google Sheets: ", e)
+  stop(e)
+})
 
 # Confirmar que las credenciales se cargaron correctamente
 message("Credenciales cargadas correctamente:")
@@ -56,13 +60,17 @@ load_script <- function(script_name) {
 }
 
 # Ejecutar scripts secundarios en orden
-load_script("Import_data_IFC.R")         # Importar datos desde Kobo
-load_script("Correcciones.R")           # Aplicar correcciones a los datos
-load_script("Alertas_IFC.R")            # Crear alertas
-load_script("Recontacto_IFC.R")         # Generar reporte de recontacto
-load_script("Export_data_IFC.R")        # Exportar datos procesados a Google Sheets
-load_script("Validación_Identidad_IFC.R") # Validación de identidad
+tryCatch({
+  load_script("Import_data_IFC.R")         # Importar datos desde Kobo
+  load_script("Correcciones.R")           # Aplicar correcciones a los datos
+  load_script("Alertas_IFC.R")            # Crear alertas
+  load_script("Recontacto_IFC.R")         # Generar reporte de recontacto
+  load_script("Export_data_IFC.R")        # Exportar datos procesados a Google Sheets
+  load_script("Validación_Identidad_IFC.R") # Validación de identidad
+}, error = function(e) {
+  message("Error al ejecutar los scripts secundarios: ", e)
+  stop(e)
+})
 
 # Confirmación de finalización
 message("Pipeline completado exitosamente.")
-
