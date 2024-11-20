@@ -1,6 +1,4 @@
-### Script Maestro para Kobo Data Pipeline
-# Este script orquesta la importación de datos, la creación de alertas,
-# el procesamiento de datos y la exportación de resultados.
+### Script Maestro para Kobo Data Pipeline ###
 
 rm(list = ls())  # Limpia el entorno
 
@@ -13,45 +11,39 @@ p_load(
 )
 
 # Configurar el directorio base del proyecto
-project_path <- getwd()  # Asume que el repositorio se clonó correctamente
+project_path <- getwd()  # Ruta del proyecto en GitHub Actions
 message("Directorio base: ", project_path)
 
-# Verificar si el archivo .env existe
-if (file.exists(".env")) {
-  message("Archivo .env encontrado en: ", project_path)
-  dotenv::load_dot_env(".env")
+# Configurar las credenciales
+if (Sys.getenv("GITHUB_ACTIONS") == "true") {
+  # En GitHub Actions, cargamos los secretos directamente
+  message("Cargando credenciales desde secretos en GitHub Actions...")
+  username <- Sys.getenv("USERNAME")
+  password <- Sys.getenv("PASSWORD")
+  email <- Sys.getenv("EMAIL")
+  creds <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
+  
+  # Crear un archivo temporal para las credenciales de Google
+  temp_creds_file <- tempfile(fileext = ".json")
+  writeLines(creds, temp_creds_file)
 } else {
-  stop("El archivo .env no se encuentra en la ruta: ", project_path)
+  # Localmente, cargamos las credenciales desde el archivo .env
+  if (file.exists(".env")) {
+    message("Archivo .env encontrado en: ", project_path)
+    dotenv::load_dot_env(".env")
+    username <- Sys.getenv("USERNAME")
+    password <- Sys.getenv("PASSWORD")
+    email <- Sys.getenv("EMAIL")
+    temp_creds_file <- Sys.getenv("GOOGLE_SHEETS_CREDENTIALS")
+  } else {
+    stop("El archivo .env no se encuentra. Asegúrate de haberlo configurado correctamente.")
+  }
 }
 
-# Cargar credenciales
-username <- Sys.getenv("USERNAME")
-password <- Sys.getenv("PASSWORD")
-email <- Sys.getenv("EMAIL")
-temp_creds_file <- "google-credentials.json"
-
-# Verificar que las credenciales estén cargadas
-if (username == "" || password == "" || email == "") {
-  stop("Una o más variables del archivo .env están vacías. Verifica su configuración.")
+# Validar que todas las credenciales estén cargadas
+if (any(is.na(c(username, password, email, temp_creds_file)))) {
+  stop("Faltan credenciales requeridas. Verifica la configuración.")
 }
-
-# Verificar la existencia del archivo de credenciales de Google
-if (!file.exists(temp_creds_file)) {
-  stop("El archivo de credenciales de Google no se encuentra en: ", temp_creds_file)
-}
-
-# Autenticación con Google Sheets usando la Service Account
-message("Autenticando con Google Sheets...")
-tryCatch({
-  gs4_auth(
-    path = temp_creds_file,  # Archivo JSON generado desde el YML
-    cache = ".secrets"
-  )
-  message("Autenticación de Google Sheets completada.")
-}, error = function(e) {
-  message("Error en la autenticación de Google Sheets: ", e)
-  stop(e)
-})
 
 # Confirmar que las credenciales se cargaron correctamente
 message("Credenciales cargadas correctamente:")
@@ -79,3 +71,4 @@ load_script("Validación_Identidad_IFC.R") # Validación de identidad
 
 # Confirmación de finalización
 message("Pipeline completado exitosamente.")
+
