@@ -3,7 +3,8 @@ name: Run Kobo Data Pipeline
 on:
   # Programar ejecución dos veces al día
   schedule:
-    - cron: "0 6,18 * * *" # Ejecutar a las 6 AM y 6 PM UTC
+    - cron: "0 15 * * *" # 9:00 AM CST (3:00 PM UTC)
+    - cron: "0 0 * * *"  # 6:00 PM CST (12:00 AM UTC)
 
   # Permitir ejecución manual
   workflow_dispatch:
@@ -43,3 +44,4 @@ jobs:
         Rscript -e "pacman::p_load(haven, labelled, tidyr, dplyr, readr, lubridate, googlesheets4, gargle, robotoolbox, openssl, dotenv, stringr, writexl, readxl)"
         # Ejecutar el script maestro
         Rscript IFC_master_script.R
+
