@@ -52,6 +52,13 @@ sheet_alertas <- tryCatch({
 })
 
 # Corregir alertas basadas en recontacto resuelto
+
+duplicados_resueltos <- c(411445117, 411454298, 411903659, 411909621, 411893696, 411901343, 
+                          411898780, 412868850, 412867223, 412857155, 412863625, 411908364, 
+                          411913281, 411913229, 410970825, 410976300, 410967969, 410969079, 
+                          411884775, 411881742, 411874075)
+
+
 message("Corrigiendo alertas basadas en recontacto resuelto...")
 tryCatch({
   errores_exitosos <- read_sheet("https://docs.google.com/spreadsheets/d/1YFC-naJiXBpc3vhNFYPveJVUBpopKyUL0BTgNK6gF9U/edit")
@@ -67,9 +74,15 @@ tryCatch({
     mutate(
       flag_extreme_values = if_else(id %in% errores_exitosos$id, 0, flag_extreme_values, missing = flag_extreme_values)
     )
+  alertas <- alertas %>%
+    mutate(flag_duplicated = if_else(id %in% duplicados_resueltos,0,flag_duplicated, missing = flag_duplicated))
+  
+  
 }, error = function(e) {
   stop("Error al corregir alertas: ", e)
 })
+
+
 
 # Calcular métricas y transformar datos para Looker Studio
 message("Procesando datos de alertas...")
