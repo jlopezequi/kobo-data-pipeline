@@ -29,6 +29,9 @@ alertas <- alertas %>%
 alertas <- alertas %>%
   mutate(flag_duration_mas = if_else(duration_minutes >= 130,0,flag_duration_mas))
 
+alertas <- alertas %>%
+  mutate(flag_duration_mas = if_else(duration_minutes <= 60,0,flag_duration_mas))
+
 #### Validación de saltos #####
 
 
