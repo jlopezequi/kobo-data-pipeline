@@ -571,18 +571,22 @@ attr(alertas$d3_ocupacion_actual_str, "label") <- "Ocupación actual"
 encuestador_labels <- c(
   "Ericka Aguirre" = 1,
   "Julio Cruz" = 2,
-  "Fátima Alonzo" = 3,
+  "Lorena Treviño" = 3,
   "Larissa Amaya" = 4,
   "Antonio Tovar" = 5,
   "Stephany Muñoz" =6,
   "Sandra Rocha"=7,
   "Angela Martínez"=8,
   "Mixuli López"=9,
-  "Fátima Arellano Muñoz"=10
+  "Fátima Arellano Muñoz"=10,
+  "Sofia Cloutier" = 11,
+  "Andrea Fonte" = 12,
+  "Nicolás Cloutier" = 13,
+  "Oscar Lozano" = 14
 )
 
   
-alertas$nombre_encuestador_str <- factor(alertas$id_encuestador, levels = c(1:10), labels = names(encuestador_labels))
+alertas$nombre_encuestador_str <- factor(alertas$id_encuestador, levels = c(1:14), labels = names(encuestador_labels))
 
 estado_labels <- c(
   "Chiapas" = 1,
