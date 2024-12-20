@@ -37,7 +37,7 @@ datos_recontacto <- datos_recontacto %>%
 
  original_rc <- data %>% 
    select(-c(k1_nombre_completo)) %>%
-   mutate(across(where(is.character), ~ suppressWarnings(as.numeric(.))))
+   mutate(across(everything(), ~ suppressWarnings(as.numeric(.))))
 
 
 original_long <- original_rc %>%
