@@ -36,7 +36,7 @@ datos_recontacto <- datos_recontacto %>%
 # Pivot del dataframe_original para agregar respuestas originales
 
  original_rc <- data %>% 
-   select(-c(k1_nombre_completo)) %>%
+   select(-c(k1_nombre_completo,`_attachments`)) %>%
    mutate(across(everything(), ~ suppressWarnings(as.numeric(.))))
 
 
